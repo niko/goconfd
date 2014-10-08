@@ -240,7 +240,7 @@ func JustLocal(handler http.Handler) http.Handler {
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(r.RemoteAddr)
+		fmt.Println("r", r.RemoteAddr)
 		remote_ip := net.ParseIP(strings.Split(r.RemoteAddr, ":")[0])
 		fmt.Println(remote_ip)
 
@@ -253,7 +253,7 @@ func JustLocal(handler http.Handler) http.Handler {
 			}
 		}
 		if !local {
-			http.Error(w, "go away", 403)
+			http.Error(w, "access denied", 403)
 			return
 		}
 		handler.ServeHTTP(w, r)
@@ -268,6 +268,12 @@ func main() {
 		Usage()
 		os.Exit(1)
 	}
+
+	fmt.Println("Defined template helpers:")
+	for k, _ := range funcMap() {
+		fmt.Printf("%s(), ", k)
+	}
+	fmt.Println("")
 
 	conf_file_name := flag.Arg(0)
 	if _, err := os.Stat(conf_file_name); os.IsNotExist(err) {

@@ -240,13 +240,10 @@ func JustLocal(handler http.Handler) http.Handler {
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("r", r.RemoteAddr)
 		remote_ip := net.ParseIP(strings.Split(r.RemoteAddr, ":")[0])
-		fmt.Println(remote_ip)
 
 		local := false
 		for _, local_subnet := range local_subnets {
-			fmt.Println(local_subnet, remote_ip)
 			if local_subnet.Contains(remote_ip) {
 				local = true
 				break

@@ -182,25 +182,25 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	switch strings.ToUpper(r.Method) {
 	case "GET":
+		if _, exists := r.URL.Query()["wait"]; exists {
+			waitFor(r.URL.Path)
+		}
+
 		conf, err = parseConfFile(path_components, conf_file_name)
 		if err != nil {
 			parseConfFileErrorHandler(w, err)
-		}
-
-		if _, exists := r.URL.Query()["wait"]; exists {
-			waitFor(r.URL.Path)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprint(w, toJson(conf))
 	case "POST":
+		if _, exists := r.URL.Query()["wait"]; exists {
+			waitFor(r.URL.Path)
+		}
+
 		conf, err = parseConfFile(path_components, conf_file_name)
 		if err != nil {
 			parseConfFileErrorHandler(w, err)
-		}
-
-		if _, exists := r.URL.Query()["wait"]; exists {
-			waitFor(r.URL.Path)
 		}
 
 		body, _ := ioutil.ReadAll(r.Body)

@@ -45,14 +45,14 @@ Given a conf.json like this:
 			"port": 3306,
 			"username": "myuser",
 			"password": "s3cr3t"
-		}
+		},
 		"slave": {
 			"host": "mysql.mysite",
 			"port": 3307,
 			"username": "myuser",
 			"password": "s3cr3t"
 		}
-       }
+	}
 }
 ```
 

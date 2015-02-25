@@ -126,6 +126,18 @@ Blocking requests
 
 Issuing a GET or POST request with a @wait@ query parameter makes goconfd block the request until it is unblocked by a PUT request to the corresponding URL. The idea is that you write a start/stop script for your service that configures and starts the service. Then it ussues a blocking request. When the request is returned, the process told to reload the new configuration.
 
+Redirecting to a central goconfd instance (experimental)
+-----------------------------------------
+
+We're using a central goconfd instance in our network. The problem is this is a single point of failure. In case the box with the central instance goes down all app would have to be reconfigured to use another instance of goconfd.
+
+A better (but still not optimal) solution is: goconfd runs on every host in the network. So all apps can look at localhost:6666 for their conf server. These local instances redirect to the central instance.
+
+In case the central host goes down all goconfd instances have to be reconfigured rather then all apps.
+
+A goconfd server configured to redirect to a master will pull the complete configuration file from the master and store versions of it. So a local backup of the configuration will exist on each server.
+
+A slave goconfd will not server any requests by itself. So the apps must be configured to handle the absence of the confserver. I decided to fail explicitly rather then gloss over the failure. Time will tell if this is the right decision.
 
 FAQ
 ---

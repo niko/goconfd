@@ -13,6 +13,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -129,11 +130,6 @@ func renderTemplate(w http.ResponseWriter, tmpl_string string, conf interface{})
 	fmt.Fprint(w, response.String())
 }
 
-var subscribers map[string]chan bool
-
-func init() {
-	subscribers = make(map[string]chan bool)
-}
 func waitFor(key string) {
 	if _, ok := subscribers[key]; !ok {
 		subscribers[key] = make(chan bool)
@@ -181,6 +177,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch strings.ToUpper(r.Method) {
+	
+	// GET plain JSON:
 	case "GET":
 		if _, exists := r.URL.Query()["wait"]; exists {
 			waitFor(r.URL.Path)
@@ -193,6 +191,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprint(w, toJson(conf))
+	
+	// POST a golang template and have goconfd fill in the values:
 	case "POST":
 		if _, exists := r.URL.Query()["wait"]; exists {
 			waitFor(r.URL.Path)
@@ -205,6 +205,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 		body, _ := ioutil.ReadAll(r.Body)
 		renderTemplate(w, string(body), conf)
+	
+	// Trigger blocking requests on this path:
 	case "PUT":
 		trigger(r.URL.Path)
 	default:
@@ -214,8 +216,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 var (
-	port = flag.Uint("port", 6666, "port")
+	port = flag.Uint("port", 6666, "The port to run the conf server on.")
+	redirect_to = flag.String("redirect-to", "", "The host and port of a master conf server where clients should be redirected to. E.g.: 10.0.0.30:6666")
+	subscribers map[string]chan bool
 )
+
+func init() {
+	subscribers = make(map[string]chan bool)
+}
 
 var Usage = func() {
 	fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
@@ -258,6 +266,34 @@ func JustLocal(handler http.Handler) http.Handler {
 	})
 }
 
+func fetchMasterConf(host string, conf_file string) {
+	resp, err := http.Get("http://" + host + "?wait")
+	if err != nil {
+		fmt.Println("Couldn't get conf from master http://" + host)
+		return
+	}
+	defer resp.Body.Close()
+
+	backup_file := conf_file + "." + time.Now().Format("2006-01-02--15-04-05")
+
+	out, err := os.Create(backup_file)
+	if err == nil {
+		fmt.Println("Saved master conf file as backup: " + backup_file)
+	} else {
+		fmt.Println("Couldn't save " + backup_file)
+		return
+	}
+	defer out.Close()
+	io.Copy(out, resp.Body)
+}
+
+func subscribeToMasterConf(host string, conf_file string) {
+	for {
+		fetchMasterConf(*redirect_to, conf_file)
+		time.Sleep(10 * time.Second)
+	}
+}
+
 func main() {
 	flag.Usage = Usage
 	flag.Parse()
@@ -266,19 +302,31 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("Defined template helpers:")
-	for k, _ := range funcMap() {
-		fmt.Printf("%s(), ", k)
-	}
-	fmt.Println("")
-
 	conf_file_name := flag.Arg(0)
-	if _, err := os.Stat(conf_file_name); os.IsNotExist(err) {
-		log.Printf("no such file or directory: %s\n", conf_file_name)
-		os.Exit(1)
+
+	if *redirect_to == "" {
+		fmt.Println("Defined template helpers:")
+		for k, _ := range funcMap() {
+			fmt.Printf("%s(), ", k)
+		}
+		fmt.Println("")
+
+		if _, err := os.Stat(conf_file_name); os.IsNotExist(err) {
+			log.Printf("no such file or directory: %s\n", conf_file_name)
+			os.Exit(1)
+		}
+
+		http.HandleFunc("/", handler)
+	} else {
+		go subscribeToMasterConf(*redirect_to, conf_file_name)
+
+		fmt.Println(*redirect_to)
+		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
+			http.Redirect(w, r, "http://" + *redirect_to + r.URL.RequestURI(), http.StatusFound)
+		})
 	}
 
-	http.HandleFunc("/", handler)
+
 	log.Printf("Listening on %d\n", *port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), Log(JustLocal(http.DefaultServeMux))))
 }

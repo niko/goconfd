@@ -39,20 +39,20 @@ Given a conf.json like this:
 
 ```json
 {
-	mysql: {
-		master: {
-			host: mysql.mysite,
-			port: 3306,
-			username: myuser,
-			password: s3cr3t
+	"mysql": {
+		"master": {
+			"host": "mysql.mysite",
+			"port": 3306,
+			"username": "myuser",
+			"password": "s3cr3t"
+		},
+		"slave": {
+			"host": "mysql.mysite",
+			"port": 3307,
+			"username": "myuser",
+			"password": "s3cr3t"
 		}
-		slave: {
-			host: mysql.mysite,
-			port: 3307,
-			username: myuser,
-			password: s3cr3t
-		}
-       }
+	}
 }
 ```
 

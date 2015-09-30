@@ -322,7 +322,7 @@ func main() {
 
 		fmt.Println(*redirect_to)
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
-			http.Redirect(w, r, "http://" + *redirect_to + r.URL.RequestURI(), http.StatusFound)
+			http.Redirect(w, r, "http://" + *redirect_to + r.URL.RequestURI(), http.StatusTemporaryRedirect)
 		})
 	}
 

@@ -5,14 +5,14 @@ A simple configuration server (ready-to-download 0-dependency binaries included)
 
 This is sort of a combination of [etcd](https://github.com/coreos/etcd) [1] and [confd](https://github.com/kelseyhightower/confd) [2].
 
-[1] without a lot of stuff that may or may not be usefull to you.
-[2] without more stuff that may or may not be usefull to you.
+[1] without a lot of stuff that may or may not be useful to you.
+[2] without more stuff that may or may not be useful to you.
 
 goconfd features:
 
 * A simple JSON serving HTTP server
-* deep link capabities
-* integrated templating engine (just go templates for now; request others if you have a need for that)
+* deep link capabilities
+* integrated template engine (just go templates for now; request others if you have a need for that)
 * blocking requests
 
 Or in terms of HTTP verbs:
@@ -21,7 +21,7 @@ Or in terms of HTTP verbs:
 * POST retrieves a filled out template
 * PUT unblocks blocking requests
 
-Each one of these supports deeplinks.
+Each one of these supports deep-links.
 
 Simple example
 --------------
@@ -90,7 +90,7 @@ and POST this template to goconfd:
 curl --data-binary @myconf.template localhost/mysql/master
 ```
 
-to make goconfd fill out your template. Note that when POSTing deeplinks work, too.
+to make goconfd fill out your template. Note that when POSTing deep-links work, too.
 
 goconfd uses [golang templates](http://golang.org/pkg/text/template/). There are some helpers defined. This is a part I'm not really happy with as it is hard to generalize template helpers. So far there are:
 
@@ -124,7 +124,7 @@ events {
 Blocking requests
 -----------------
 
-Issuing a GET or POST request with a @wait@ query parameter makes goconfd block the request until it is unblocked by a PUT request to the corresponding URL. The idea is that you write a start/stop script for your service that configures and starts the service. Then it ussues a blocking request. When the request is returned, the process told to reload the new configuration.
+Issuing a GET or POST request with a @wait@ query parameter makes goconfd block the request until it is unblocked by a PUT request to the corresponding URL. The idea is that you write a start/stop script for your service that configures and starts the service. Then it issues a blocking request. When the request is returned, the process told to reload the new configuration.
 
 Redirecting to a central goconfd instance (experimental)
 -----------------------------------------
@@ -137,7 +137,7 @@ In case the central host goes down all goconfd instances have to be reconfigured
 
 A goconfd server configured to redirect to a master will pull the complete configuration file from the master and store versions of it. So a local backup of the configuration will exist on each server.
 
-A slave goconfd will not server any requests by itself. So the apps must be configured to handle the absence of the confserver. I decided to fail explicitly rather then gloss over the failure. Time will tell if this is the right decision.
+A slave goconfd will not server any requests by itself. So the apps must be configured to handle the absence of the goconfd service. I decided to fail explicitly rather then gloss over the failure. Time will tell if this is the right decision.
 
 FAQ
 ---

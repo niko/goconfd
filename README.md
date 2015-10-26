@@ -129,7 +129,7 @@ Issuing a GET or POST request with a @wait@ query parameter makes goconfd block 
 Redirecting to a central goconfd instance (experimental)
 -----------------------------------------
 
-We're using a central goconfd instance in our network. The problem is this is a single point of failure. In case the box with the central instance goes down all app would have to be reconfigured to use another instance of goconfd.
+We're using a central goconfd instance in our network. The problem is this is a single point of failure. In case the box with the central instance goes down all apps would have to be reconfigured to use another instance of goconfd.
 
 A better (but still not optimal) solution is: goconfd runs on every host in the network. So all apps can look at localhost:6666 for their conf server. These local instances redirect to the central instance.
 
@@ -137,13 +137,13 @@ In case the central host goes down all goconfd instances have to be reconfigured
 
 A goconfd server configured to redirect to a master will pull the complete configuration file from the master and store versions of it. So a local backup of the configuration will exist on each server.
 
-A slave goconfd will not server any requests by itself. So the apps must be configured to handle the absence of the goconfd service. I decided to fail explicitly rather then gloss over the failure. Time will tell if this is the right decision.
+A slave goconfd will not serve any requests by itself. So the apps must be configured to handle the absence of the goconfd service. I decided to fail explicitly rather then gloss over the failure. Time will tell if this is the right decision.
 
 FAQ
 ---
 
 * Why not mustache?
-  In my first attempts to port even simple configurations from chef to goconfd I realized that the template engine must support at least some helpers. With Mustache helpers are bound to the values which are filled into the template. As in goconfd the values are just what's supported by JSON I see no way who helpers should be possible. I'd like to be proven wrong on this.
+  In my first attempts to port even simple configurations from chef to goconfd I realized that the template engine must support at least some helpers. With Mustache helpers are bound to the values which are filled into the template. As in goconfd the values are just what's supported by JSON I see no way how helpers should be possible. I'd like to be proven wrong on this.
 * Can I have helper X?
   Sure. Post a github issue. Or even better fork & pull request.
 

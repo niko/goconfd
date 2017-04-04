@@ -99,6 +99,7 @@ func funcMap() template.FuncMap {
 	return template.FuncMap{
 		"path_join": path.Join,
 		"split":     strings.Split,
+		"trim":      strings.Trim,
 		"join":      join,
 		"add":       add,
 		"first":     first,
@@ -113,17 +114,17 @@ func renderTemplate(w http.ResponseWriter, tmpl_string string, conf interface{})
 	var tmpl *template.Template
 	var response bytes.Buffer
 
-	tmpl, err = template.New("Post Body").Funcs(funcMap()).Parse(tmpl_string)
+	tmpl, err = template.New("Confserver Template").Funcs(funcMap()).Parse(tmpl_string)
 	if err != nil {
 		log.Println(err.Error())
-		http.Error(w, "Error parsing template", 500)
+		http.Error(w, err.Error(), 500)
 		return
 	}
 
 	err = tmpl.Execute(&response, conf)
 	if err != nil {
 		log.Println(err.Error())
-		http.Error(w, "Error executing template", 500)
+		http.Error(w, err.Error(), 500)
 		return
 	}
 

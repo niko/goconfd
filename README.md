@@ -95,6 +95,7 @@ to make goconfd fill out your template. Note that when POSTing deep-links work, 
 goconfd uses [golang templates](http://golang.org/pkg/text/template/). There are some helpers defined. This is a part I'm not really happy with as it is hard to generalize template helpers. So far there are:
 
 * path_join
+* trim
 * split
 * join
 * add
